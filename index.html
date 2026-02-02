@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Executive Summary: CGI Dept. Saturation Analysis (Fiscal Year)</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f1f5f9; color: #1e293b; }
+        .report-page { background: white; width: 1200px; margin: 2rem auto; padding: 3rem; border-radius: 8px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1); border-top: 12px solid #1e293b; }
+        .chart-container { position: relative; height: 480px; width: 100%; }
+    </style>
+</head>
+<body>
+
+<div class="report-page">
+    <!-- Header -->
+    <div class="flex justify-between items-start border-b pb-6 mb-8">
+        <div>
+            <h1 class="text-4xl font-extrabold tracking-tight">CGI Dept. Workload Analysis</h1>
+            <p class="text-slate-500 mt-2 text-lg uppercase tracking-widest">Fiscal Year View (Aug - July) | 2023 - 2026</p>
+        </div>
+        <div class="text-right">
+            <p class="font-bold text-slate-800">Operational Strategy Report</p>
+            <p class="text-slate-500">Current Period: FY26 Q2</p>
+        </div>
+    </div>
+
+    <!-- Metrics Grid -->
+    <div class="grid grid-cols-4 gap-6 mb-8">
+        <div class="p-5 bg-slate-50 rounded-2xl border border-slate-100">
+            <p class="text-sm font-semibold text-slate-500 uppercase">Overall Avg Saturation</p>
+            <p class="text-4xl font-bold mt-1 text-slate-900" id="avg-val">--%</p>
+        </div>
+        <div class="p-5 bg-slate-50 rounded-2xl border border-slate-100">
+            <p class="text-sm font-semibold text-slate-500 uppercase">Busy Month Ratio</p>
+            <p class="text-4xl font-bold mt-1 text-rose-600" id="high-period">--</p>
+        </div>
+        <div class="p-5 bg-slate-50 rounded-2xl border border-slate-100 border-l-4 border-l-rose-500">
+            <p class="text-sm font-semibold text-slate-500 uppercase">Latest FY26 Avg</p>
+            <p class="text-4xl font-bold mt-1 text-rose-500" id="current-val">--%</p>
+        </div>
+        <div class="p-5 bg-slate-50 rounded-2xl border border-slate-100">
+            <p class="text-sm font-semibold text-slate-500 uppercase">Total Sample</p>
+            <p class="text-4xl font-bold mt-1 text-indigo-600" id="data-count">--</p>
+        </div>
+    </div>
+
+    <!-- Main Chart Section -->
+    <div class="mb-10">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-xl font-bold">Monthly Fluctuations vs. Fiscal Year Benchmark</h2>
+            <div class="flex gap-4 text-[10px] font-bold uppercase text-slate-400">
+                <div class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-rose-500"></span> Busy</div>
+                <div class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-blue-500"></span> Normal</div>
+                <div class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-emerald-500"></span> Idle</div>
+                <div class="flex items-center gap-1 text-indigo-500"><span class="w-4 h-0.5 border-b-2 border-dashed border-indigo-400"></span> FY Benchmark</div>
+            </div>
+        </div>
+        <div class="chart-container">
+            <canvas id="workloadChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Strategy Footer -->
+    <div class="grid grid-cols-3 gap-8 pt-8 border-t border-slate-100">
+        <div>
+            <h3 class="font-bold text-slate-900 flex items-center gap-2 mb-3 text-lg">
+                <span class="w-2 h-6 bg-slate-400 rounded-full"></span> FY24: High Performance
+            </h3>
+            <p class="text-sm text-slate-600 leading-relaxed">The most stable fiscal year with an average of 83%. Resources were highly utilized across both Q1-Q2 and Q3-Q4 peaks.</p>
+        </div>
+        <div>
+            <h3 class="font-bold text-slate-900 flex items-center gap-2 mb-3 text-lg">
+                <span class="w-2 h-6 bg-blue-500 rounded-full"></span> FY25: Mid-Year Pivot
+            </h3>
+            <p class="text-sm text-slate-600 leading-relaxed">Average dropped to 72%. A clear downward trend started in FY25 Q4 (May-July), marking the beginning of the current workload crisis.</p>
+        </div>
+        <div>
+            <h3 class="font-bold text-rose-600 flex items-center gap-2 mb-3 text-lg">
+                <span class="w-2 h-6 bg-rose-500 rounded-full"></span> FY26: Idle Alert
+            </h3>
+            <p class="text-sm text-slate-600 leading-relaxed">Current FY average (Aug-Jan) is critical at 55%. Q2 alone is below 40%, indicating a severe misalignment of current capacity and project pipeline.</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    let chart;
+
+    const rawData = [
+        ["2023/5/5", 64], ["2023/5/12", 76], ["2023/5/19", 97], ["2023/5/26", 73], ["2023/6/2", 39], ["2023/6/8", 83], ["2023/6/16", 100], ["2023/6/25", 100], ["2023/6/30", 67], ["2023/7/7", 46], ["2023/7/14", 47], ["2023/7/21", 61], ["2023/7/28", 41], ["2023/8/4", 46], ["2023/8/11", 100], ["2023/8/18", 100], ["2023/8/25", 100], ["2023/9/1", 100], ["2023/9/8", 100], ["2023/9/15", 100], ["2023/9/22", 100], ["2023/10/13", 100], ["2023/10/20", 100], ["2023/10/27", 94], ["2023/11/3", 67], ["2023/11/10", 64], ["2023/11/17", 89], ["2023/11/24", 84], ["2023/12/1", 51], ["2023/12/8", 46], ["2023/12/15", 19], ["2023/12/22", 61], ["2023/12/29", 100], ["2024/1/5", 100], ["2024/1/12", 100], ["2024/1/19", 100], ["2024/1/25", 61], ["2024/2/1", 43], ["2024/2/9", 74], ["2024/2/23", 41], ["2024/2/28", 46], ["2024/3/1", 40], ["2024/3/8", 70], ["2024/3/15", 69], ["2024/3/22", 66], ["2024/3/29", 40], ["2024/4/7", 100], ["2024/4/12", 100], ["2024/4/19", 100], ["2024/4/26", 100], ["2024/5/11", 100], ["2024/5/17", 100], ["2024/5/24", 100], ["2024/5/31", 100], ["2024/6/7", 96], ["2024/6/14", 100], ["2024/6/21", 97], ["2024/6/28", 91], ["2024/7/5", 73], ["2024/7/12", 90], ["2024/7/19", 100], ["2024/7/26", 100], ["2024/8/2", 87], ["2024/8/9", 86], ["2024/8/16", 100], ["2024/8/23", 93], ["2024/8/30", 76], ["2024/9/6", 74], ["2024/9/13", 100], ["2024/9/20", 77], ["2024/9/27", 100], ["2024/10/4", 100], ["2024/10/12", 100], ["2024/10/19", 100], ["2024/10/25", 97], ["2024/11/1", 87], ["2024/11/8", 79], ["2024/11/15", 86], ["2024/11/22", 44], ["2024/11/29", 83], ["2024/12/6", 100], ["2024/12/13", 96], ["2024/12/20", 97], ["2024/12/27", 89], ["2025/1/3", 57], ["2025/1/10", 63], ["2025/1/17", 100], ["2025/1/24", 77], ["2025/2/14", 80], ["2025/2/21", 70], ["2025/2/28", 46], ["2025/3/7", 41], ["2025/3/14", 53], ["2025/3/21", 79], ["2025/3/28", 100], ["2025/4/4", 100], ["2025/4/11", 100], ["2025/4/18", 97], ["2025/4/25", 93], ["2025/4/30", 91], ["2025/5/9", 89], ["2025/5/16", 91], ["2025/5/23", 67], ["2025/5/30", 46], ["2025/6/6", 63], ["2025/6/13", 49], ["2025/6/20", 56], ["2025/6/27", 49], ["2025/7/4", 47], ["2025/7/11", 56], ["2025/7/18", 61], ["2025/7/25", 66], ["2025/8/1", 97], ["2025/8/8", 70], ["2025/8/15", 67], ["2025/8/22", 83], ["2025/8/29", 63], ["2025/9/5", 53], ["2025/9/12", 41], ["2025/9/19", 57], ["2025/9/26", 67], ["2025/10/10", 60], ["2025/10/17", 99], ["2025/10/24", 67], ["2025/10/31", 73], ["2025/11/7", 63], ["2025/11/14", 69], ["2025/11/21", 46], ["2025/11/28", 54], ["2025/12/5", 63], ["2025/12/12", 51], ["2025/12/19", 46], ["2025/12/26", 41], ["2026/1/2", 26], ["2026/1/9", 24], ["2026/1/16", 49], ["2026/1/23", 50]
+    ];
+
+    // Fiscal Year Helper: Starts in Aug (8)
+    function getFiscalYear(dateStr) {
+        const [y, m] = dateStr.split('/').map(Number);
+        return m >= 8 ? y + 1 : y;
+    }
+
+    const fyColors = {
+        "2023": { area: "rgba(148, 163, 184, 0.2)", line: "#64748b" }, // FY23
+        "2024": { area: "rgba(59, 130, 246, 0.2)", line: "#3b82f6" }, // FY24
+        "2025": { area: "rgba(245, 158, 11, 0.2)", line: "#f59e0b" }, // FY25
+        "2026": { area: "rgba(244, 63, 94, 0.2)", line: "#f43f5e" }  // FY26
+    };
+
+    function getMonthlyData() {
+        const monthly = {};
+        rawData.forEach(([dateStr, val]) => {
+            const [y, m] = dateStr.split('/');
+            const key = `${y}/${m.padStart(2, '0')}`;
+            if (!monthly[key]) monthly[key] = { sum: 0, count: 0, fy: getFiscalYear(dateStr) };
+            monthly[key].sum += val;
+            monthly[key].count++;
+        });
+        return Object.keys(monthly).map(key => ({
+            label: key,
+            val: Math.round(monthly[key].sum / monthly[key].count),
+            fy: monthly[key].fy
+        }));
+    }
+
+    function getFYMap() {
+        const fyData = {};
+        rawData.forEach(([dateStr, val]) => {
+            const fy = getFiscalYear(dateStr);
+            if (!fyData[fy]) fyData[fy] = { sum: 0, count: 0 };
+            fyData[fy].sum += val;
+            fyData[fy].count++;
+        });
+        const map = {};
+        Object.keys(fyData).forEach(fy => { map[fy] = Math.round(fyData[fy].sum / fyData[fy].count); });
+        return map;
+    }
+
+    function getStatus(val) {
+        if (val >= 90) return { label: 'Busy', color: '#f43f5e' };
+        if (val >= 60) return { label: 'Normal', color: '#3b82f6' };
+        return { label: 'Idle', color: '#10b981' };
+    }
+
+    const fyLabelsPlugin = {
+        id: 'fyLabels',
+        afterDraw: (chart) => {
+            const { ctx, scales: { x, y } } = chart;
+            const mData = getMonthlyData();
+            const fyMap = getFYMap();
+            const fys = Object.keys(fyMap).sort();
+
+            ctx.save();
+            ctx.textAlign = 'center';
+            ctx.font = 'bold 12px Inter, sans-serif';
+
+            fys.forEach(fy => {
+                const monthsInFY = mData.filter(d => d.fy == fy);
+                if (monthsInFY.length === 0) return;
+
+                const firstIdx = mData.indexOf(monthsInFY[0]);
+                const lastIdx = mData.indexOf(monthsInFY[monthsInFY.length - 1]);
+                let xCenter = (x.getPixelForValue(mData[firstIdx].label) + x.getPixelForValue(mData[lastIdx].label)) / 2;
+                if (fy == "2026") xCenter = Math.min(xCenter, x.getPixelForValue(mData[lastIdx].label) - 35);
+
+                const yPos = y.getPixelForValue(fyMap[fy]);
+                const text = `FY${String(fy).slice(-2)} AVG: ${fyMap[fy]}%`;
+                const textWidth = ctx.measureText(text).width;
+                
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+                ctx.beginPath();
+                ctx.roundRect(xCenter - (textWidth/2 + 6), yPos - 11, textWidth + 12, 22, 6);
+                ctx.fill();
+
+                ctx.fillStyle = '#1e293b';
+                ctx.fillText(text, xCenter, yPos + 4);
+            });
+            ctx.restore();
+        }
+    };
+
+    window.onload = function() {
+        const mData = getMonthlyData();
+        const fyMap = getFYMap();
+        const labels = mData.map(d => d.label);
+        const values = mData.map(d => d.val);
+        const fyRef = mData.map(d => fyMap[d.fy]);
+        
+        // Stats
+        const overallAvg = (values.reduce((a, b) => a + b, 0) / values.length).toFixed(1);
+        const highCount = values.filter(v => v >= 90).length;
+        const fy26Avg = fyMap["2026"];
+
+        document.getElementById('avg-val').innerText = overallAvg + '%';
+        document.getElementById('high-period').innerText = ((highCount / values.length) * 100).toFixed(0) + '%';
+        document.getElementById('current-val').innerText = fy26Avg + '%';
+        document.getElementById('data-count').innerText = values.length + ' Months';
+
+        const ctx = document.getElementById('workloadChart').getContext('2d');
+        chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'FY Benchmark',
+                        data: fyRef,
+                        borderColor: '#6366f1',
+                        borderDash: [5, 5],
+                        borderWidth: 2,
+                        pointRadius: 0,
+                        stepped: 'middle',
+                        fill: false
+                    },
+                    {
+                        label: 'Monthly Saturation',
+                        data: values,
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.3,
+                        pointBackgroundColor: (context) => getStatus(context.raw).color,
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 6,
+                        segment: {
+                            borderColor: ctx => fyColors[mData[ctx.p1DataIndex].fy]?.line || '#475569',
+                            backgroundColor: ctx => fyColors[mData[ctx.p1DataIndex].fy]?.area || 'transparent'
+                        }
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { 
+                        grid: { display: false },
+                        ticks: {
+                            font: { size: 12, weight: 'bold' },
+                            callback: function(val, index) {
+                                const fy = mData[index].fy;
+                                const fyIdxs = mData.map((d, i) => d.fy === fy ? i : -1).filter(i => i !== -1);
+                                if (index === Math.floor((fyIdxs[0] + fyIdxs[fyIdxs.length-1]) / 2)) return `FY${String(fy).slice(-2)}`;
+                                return '';
+                            },
+                            autoSkip: false, maxRotation: 0
+                        }
+                    },
+                    y: { min: 0, max: 110, grid: { color: '#f1f5f9' }, ticks: { callback: v => v + '%', font: { size: 11 } } }
+                }
+            },
+            plugins: [fyLabelsPlugin]
+        });
+    }
+</script>
+</body>
+</html>
